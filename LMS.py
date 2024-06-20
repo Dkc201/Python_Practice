@@ -1,60 +1,51 @@
-def master_data():
-    c_master_data = [
-         {"cs_start":100,"cs_end":199,"loan_amt_start":10000,"loan_amt_end":19999,"interest":5  ,"duration":65}
-        ,{"cs_start":400,"cs_end":499,"loan_amt_start":10000,"loan_amt_end":19999,"interest":3.5,"duration":65}
-        ,{"cs_start":200,"cs_end":299,"loan_amt_start":10000,"loan_amt_end":19999,"interest":4.5,"duration":65}
-        ,{"cs_start":300,"cs_end":399,"loan_amt_start":10000,"loan_amt_end":19999,"interest":4  ,"duration":65}
-        ]
-    return c_master_data
-    
-def chk_cust_qualify(CreditScore,LoanAmount):
-    c_master_data=[]
-    c_master_data=master_data()
-    #print(c_master_data)
-    reject=0
-    all_cs=[]
-    all_loan_amt=[]
-    for chk in c_master_data :
-        all_cs.append(chk['cs_start'])
-        all_cs.append(chk['cs_end'])
-        all_loan_amt.append(chk['loan_amt_start'])
-        all_loan_amt.append(chk['loan_amt_end'])
+from lms.MasterData import MasterData
+from lms.QualifyCustomer import QualifyCustomer
 
-    max_cs=max(all_cs)
-    max_loan_amt=max(all_loan_amt)
-    min_cs=min(all_cs)
-    min_loan_amt=min(all_loan_amt)
-    #print('Credit Score should be between',min_cs,'and',max_cs)
-    #print('Loan Amount should be between',min_loan_amt,'and',max_loan_amt)
+l_customername = None
+l_creditscore = None
+l_loanamount = None
+print ('\nHello Dear Customer\n')
 
-    if CreditScore>max_cs or CreditScore<min_cs or LoanAmount>max_loan_amt or LoanAmount<min_loan_amt :
-        #print('CreditScore :',CreditScore,'and LoanAmount :', LoanAmount,' are not enough for the loan')
-        reject=1
-    return reject
+while True :
+    l_customername= input('Enter your name :')
+    if not l_customername.isalpha():
+        print("That is not a valid Name")
+    else:
+        break
+while True :
+    l_creditscore= input('Enter your CreditScore : ')
+    if not l_creditscore.isnumeric():
+        print("That is not a valid CreditScore")
+    else:
+        l_creditscore= int(l_creditscore)
+        break
+while True:
+    l_loanamount= input ('Enter your LoanAmount : ')
+    if not l_loanamount.isnumeric(): 
+        print("That is not a valid LoanAmount")
+    else:
+        l_loanamount= int(l_loanamount)
+        break
+
+def totalloanAmount(p_creditScore,p_loanAmount,p_masterdata) :
+        masterdata = p_masterdata
+        creditscore = p_creditScore
+        loanamount = p_loanAmount
+        for data in masterdata:
+            if creditscore >= int(data['CS_START']) and creditscore <= int(data['CS_END']) and loanamount >= int(data['LOAN_AMOUNT_START']) and loanamount <= int(data['LOAN_AMOUNT_END']):
+                total_loan_amount = loanamount + (loanamount/100) * float(data['INTEREST'])
+                print(f"You have to pay {total_loan_amount} for {data['DURATION']} months and interest rate will be {data['INTEREST']} %")                  
 
 
+lms_masterdata_file_path="C:/Users/dkc91/OneDrive/Desktop/Python_classes/My_Python_Code/lms_project/lms_masterdata.csv"
+objmd = MasterData(lms_masterdata_file_path)
+dict_masterdata = objmd.buildmasterdata()
+masterdata = dict_masterdata['Data']
+# print (masterdata)
 
-def Calculate_TotalLoanAmount(CreditScore,LoanAmount) :
-    c_master_data=master_data()
-    reject=chk_cust_qualify(CreditScore,LoanAmount)
-    
-    if reject==0 :   
-        for c in c_master_data:
-    #print(c)
-    #print(c['cs_start'])
-            if CreditScore>=c['cs_start'] and CreditScore<=c['cs_end'] and LoanAmount>=c['loan_amt_start'] and LoanAmount<=c['loan_amt_end']:
-                TotalAmount = LoanAmount + (LoanAmount/100)*c['interest']
-                print('You have to pay', TotalAmount,'for',c['duration'],'months and interest rate will be',c['interest'],'%')
-               
-    else :
-        print('Either Credit Score or Loan Amount is not suffecient')
-                
-l_CustomerName='A'
-l_CreditScore=30
-l_LoanAmount=10029
-
-Calculate_TotalLoanAmount(l_CreditScore,l_LoanAmount)
-
-  
-#reject=chk_cust_qualify(300,109)
-#print(reject)
+objQC = QualifyCustomer(l_creditscore,l_loanamount,masterdata)
+dict_customer_qualify = objQC.check_customer_qualification()
+if dict_customer_qualify['Status']=='Success':
+    totalloanAmount(l_creditscore,l_loanamount,masterdata)
+else:
+    print(dict_customer_qualify['message'])
