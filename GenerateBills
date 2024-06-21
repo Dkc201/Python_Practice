@@ -1,0 +1,92 @@
+from ProductData import ProductData
+import datetime
+import time
+import random
+import json
+# import logging,sys
+class GenerateBills:
+
+    def get_bill_id(self):
+        format1 = '%Y%m%d%H%M%S'
+        today = datetime.datetime.today()
+        return today.strftime(format1)
+        
+        
+    def getbilldate(self):
+        format1 = '%Y-%m-%d %H:%M:%S'
+        today = datetime.datetime.today()
+        return today.strftime(format1)
+     
+        
+    def getstoreid(self):
+        return random.randint(1,4)
+        
+        
+    def getproductid(self):
+        return random.randint(1,25)
+        
+
+    def getquantity(self):
+        return random.randint(1,25)
+        
+        
+    def getproductname(self,productdata,productid):
+        productname = ""
+        for data in productdata:
+            if int(data['product_id']) == int(productid):
+                return data['product_name']
+        
+        
+    def getbilltotal(self,billdetail):
+        billtotal = 0
+        for data in billdetail:
+            billtotal = billtotal + int(data['total_price'])   
+        return billtotal
+        
+        
+    def total_price(self,productdata,productid,quantity):
+        unitprice = 0
+        for data in productdata:
+            if int(data['product_id']) == int(productid):
+                unitprice = float(data['unit_price'])
+                break
+        return quantity*unitprice
+        
+        
+    def getbilldata(self):
+        bill_json_data = {'bill_id':self.get_bill_id()
+                    ,'bill_date':self.getbilldate()
+                    ,'store_id':self.getstoreid()
+                    }
+        productdataobj = ProductData()
+        productdata = productdataobj.product_data()
+        billdetail = []
+        for i in range(25):
+            reject = False
+            productid = self.getproductid()
+            for items in billdetail:
+                if items['product_id'] == productid:
+                    reject = True
+                    break
+            if reject == False:
+                quantity = self.getquantity()
+                totalprice = self.total_price(productdata,productid,quantity)
+                productname = self.getproductname(productdata,productid)
+                billdetail.append({'product_id':productid,'product_name':productname,'quantity':quantity,'total_price':totalprice})
+        bill_json_data['bill_details'] = billdetail
+        bill_json_data['bill_total'] = self.getbilltotal(billdetail)
+        print(bill_json_data)
+        return bill_json_data
+        
+    
+    def generate_bill(self):
+        billjsondata = self.getbilldata()
+        billjsonfile = self.get_bill_id()
+        file = 'C:/Users/dkc91/OneDrive/Desktop/Python_classes/My_Python_Code/BillingSystem/Bills/'+billjsonfile+'.json'
+        with open(file,'w') as billfile:
+            json.dump(billjsondata,billfile)
+        
+        
+if __name__=='__main__':
+    billgenerateobj = GenerateBills()
+    billgenerateobj.bill_generate()
